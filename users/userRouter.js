@@ -1,20 +1,102 @@
 const express = require('express');
-
+const User = require('./userDb.js');
 const router = express.Router();
 
-router.post('/', (req, res) => {});
+// READY TO TEST
+router.post('/', validateUser, (req, res) => {
+  const { body } = req.params;
+  User.insert(body)
+    .then(user => {
+      res.status(200).json(req.user);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: 'unable to save new user' });
+    });
+});
 
-router.post('/:id/posts', (req, res) => {});
+// READY TO TEST
+router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
+  const { id } = req.params;
+  const { body, text } = req.params;
 
-router.get('/', (req, res) => {});
+  User.update(id, text)
+    .then(posts => {
+      res.status(200).json(req.posts);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: 'failed to create post' });
+    });
+});
 
-router.get('/:id', (req, res) => {});
+// WORKS
+router.get('/', (req, res) => {
+  User.get()
+    .then(users => {
+      res.status(200).json(users);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: 'could not fetch users data' });
+    });
+});
 
-router.get('/:id/posts', (req, res) => {});
+// WORKS
+router.get('/:id', validateUserId, (req, res) => {
+  const { id } = req.params;
 
-router.delete('/:id', (req, res) => {});
+  User.getById(id)
+    .then(user => {
+      res.status(200).json(user);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: 'could not fetch user data' });
+    });
+});
 
-router.put('/:id', (req, res) => {});
+// READY TO TEST
+router.get('/:id/posts', validateUserId, validatePost, (req, res) => {
+  const { id, post } = req.params;
+
+  User.getById(post)
+    .then(post => {
+      res.status(200).json(post);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: 'could not fetch post data' });
+    });
+});
+
+// READY TO TEST
+router.delete('/:id', validateUserId, (req, res) => {
+  const { id } = req.params;
+
+  User.remove(id)
+    .then(deletedUser => {
+      res.status(204).end();
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: 'could not delete user' });
+    });
+});
+
+// READY TO TEST
+router.put('/:id', validateUserId, validateUser, (req, res) => {
+  const { id, body } = req.params;
+
+  User.update(id, body)
+    .then(user => {
+      res.status(200).json(user);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: 'could not update user' });
+    });
+});
 
 //custom middleware
 
@@ -39,7 +121,7 @@ function validateUserId(req, res, next) {
 
 // READY TO TEST
 function validateUser(req, res, next) {
-  const { body } = req.params;
+  const { body, name } = req.params;
 
   User.get(body)
     .then(user => {
@@ -59,9 +141,9 @@ function validateUser(req, res, next) {
 
 // READY TO TEST
 function validatePost(req, res, next) {
-  const { body } = req.params;
+  const { body, text } = req.params;
 
-  Post.get(body)
+  User.get(body)
     .then(user => {
       if (!body) {
         res.status(400).json({ message: 'missing post data' });
