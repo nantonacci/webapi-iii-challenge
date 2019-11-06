@@ -2,7 +2,7 @@ const express = require('express');
 const User = require('./userDb.js');
 const router = express.Router();
 
-// READY TO TEST
+// DOESN'T WORK
 router.post('/', validateUser, (req, res) => {
   const { body } = req.params;
   User.insert(body)
@@ -56,7 +56,7 @@ router.get('/:id', validateUserId, (req, res) => {
     });
 });
 
-// READY TO TEST
+// MISSING POST DATA
 router.get('/:id/posts', validateUserId, validatePost, (req, res) => {
   const { id, post } = req.params;
 
@@ -70,7 +70,7 @@ router.get('/:id/posts', validateUserId, validatePost, (req, res) => {
     });
 });
 
-// READY TO TEST
+// WORKS
 router.delete('/:id', validateUserId, (req, res) => {
   const { id } = req.params;
 
@@ -119,7 +119,7 @@ function validateUserId(req, res, next) {
     });
 }
 
-// READY TO TEST
+// WORKS - maybe?
 function validateUser(req, res, next) {
   const { body, name } = req.params;
 
