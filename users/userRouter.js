@@ -1,8 +1,9 @@
 const express = require('express');
 const User = require('./userDb.js');
+const Post = require('../posts/postDb.js');
 const router = express.Router();
 
-// cannot read property name of undefined
+// WORKS
 router.post('/', validateUser, (req, res) => {
   const newUser = req.body;
 
@@ -16,13 +17,13 @@ router.post('/', validateUser, (req, res) => {
     });
 });
 
-// READY TO TEST
+// failed to create post
 router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
   const id = req.params.id;
   const body = req.body;
   const text = req.body.text;
 
-  User.update(id, text)
+  Post.insert(text)
     .then(posts => {
       res.status(200).json(req.posts);
     })
@@ -58,9 +59,9 @@ router.get('/:id', validateUserId, (req, res) => {
     });
 });
 
-// cannot read property text of undefined
-router.get('/:id/posts', validateUserId, validatePost, (req, res) => {
-  const { id } = req.params;
+// WORKS
+router.get('/:id/posts', validateUserId, (req, res) => {
+  const id = req.params.id;
 
   User.getUserPosts(id)
     .then(post => {
@@ -86,7 +87,7 @@ router.delete('/:id', validateUserId, (req, res) => {
     });
 });
 
-// cannot read property name of undefined
+// WORKS
 router.put('/:id', validateUserId, validateUser, (req, res) => {
   const id = req.params.id;
   const body = req.body;
@@ -103,7 +104,7 @@ router.put('/:id', validateUserId, validateUser, (req, res) => {
 
 //custom middleware
 
-// READY TO TEST
+// WORKS
 function validateUserId(req, res, next) {
   const id = req.params.id;
 
@@ -122,7 +123,7 @@ function validateUserId(req, res, next) {
     });
 }
 
-// BROKEN
+// WORKS
 function validateUser(req, res, next) {
   const name = req.body.name;
   const body = req.body;
@@ -137,12 +138,12 @@ function validateUser(req, res, next) {
   }
 }
 
-// BROKEN
+// WORKS
 function validatePost(req, res, next) {
   const text = req.body.text;
   const body = req.body;
 
-  if (!body) {
+  if (Object.entries(body).length === 0) {
     res.status(400).json({ message: 'missing post data' });
   }
   if (!text) {
