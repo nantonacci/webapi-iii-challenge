@@ -2,12 +2,13 @@ const express = require('express');
 const User = require('./userDb.js');
 const router = express.Router();
 
-// DOESN'T WORK
+// cannot read property name of undefined
 router.post('/', validateUser, (req, res) => {
-  const { body } = req.params;
-  User.insert(body)
+  const newUser = req.body;
+
+  User.insert(newUser)
     .then(user => {
-      res.status(200).json(req.user);
+      res.status(200).json(user);
     })
     .catch(err => {
       console.log(err);
@@ -17,8 +18,9 @@ router.post('/', validateUser, (req, res) => {
 
 // READY TO TEST
 router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
-  const { id } = req.params;
-  const { body, text } = req.params;
+  const id = req.params.id;
+  const body = req.body;
+  const text = req.body.text;
 
   User.update(id, text)
     .then(posts => {
@@ -56,11 +58,11 @@ router.get('/:id', validateUserId, (req, res) => {
     });
 });
 
-// MISSING POST DATA
+// cannot read property text of undefined
 router.get('/:id/posts', validateUserId, validatePost, (req, res) => {
-  const { id, post } = req.params;
+  const { id } = req.params;
 
-  User.getById(post)
+  User.getUserPosts(id)
     .then(post => {
       res.status(200).json(post);
     })
@@ -84,9 +86,10 @@ router.delete('/:id', validateUserId, (req, res) => {
     });
 });
 
-// READY TO TEST
+// cannot read property name of undefined
 router.put('/:id', validateUserId, validateUser, (req, res) => {
-  const { id, body } = req.params;
+  const id = req.params.id;
+  const body = req.body;
 
   User.update(id, body)
     .then(user => {
@@ -102,7 +105,7 @@ router.put('/:id', validateUserId, validateUser, (req, res) => {
 
 // READY TO TEST
 function validateUserId(req, res, next) {
-  const { id } = req.params;
+  const id = req.params.id;
 
   User.getById(id)
     .then(user => {
@@ -119,44 +122,34 @@ function validateUserId(req, res, next) {
     });
 }
 
-// WORKS - maybe?
+// BROKEN
 function validateUser(req, res, next) {
-  const { body, name } = req.params;
+  const name = req.body.name;
+  const body = req.body;
 
-  User.get(body)
-    .then(user => {
-      if (!body) {
-        res.status(400).json({ message: 'missing user data' });
-      }
-      if (!name) {
-        res.status(400).json({ message: 'missing required name field' });
-      }
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ message: 'exception', err });
-    });
-  next();
+  if (Object.entries(body).length === 0) {
+    res.status(400).json({ message: 'missing user data' });
+  }
+  if (!name) {
+    res.status(400).json({ message: 'missing required name field' });
+  } else {
+    next();
+  }
 }
 
-// READY TO TEST
+// BROKEN
 function validatePost(req, res, next) {
-  const { body, text } = req.params;
+  const text = req.body.text;
+  const body = req.body;
 
-  User.get(body)
-    .then(user => {
-      if (!body) {
-        res.status(400).json({ message: 'missing post data' });
-      }
-      if (!text) {
-        res.status(400).json({ message: 'missing required text field' });
-      }
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ message: 'exception', err });
-    });
-  next();
+  if (!body) {
+    res.status(400).json({ message: 'missing post data' });
+  }
+  if (!text) {
+    res.status(400).json({ message: 'missing required text field' });
+  } else {
+    next();
+  }
 }
 
 module.exports = router;
